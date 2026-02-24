@@ -26,10 +26,17 @@ import {
     ChevronRight
 } from "lucide-react";
 
+interface Domain {
+    id: string;
+    name: string;
+    active: boolean;
+    createdAt?: any;
+}
+
 export default function AdminPanel() {
     const [user, loading] = useAuthState(auth);
     const [isAdmin, setIsAdmin] = useState(false);
-    const [domains, setDomains] = useState<any[]>([]);
+    const [domains, setDomains] = useState<Domain[]>([]);
     const [stats, setStats] = useState({ users: 0, emails: 0, activeAddresses: 0 });
     const [newDomain, setNewDomain] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,7 +54,10 @@ export default function AdminPanel() {
 
         const fetchDomains = async () => {
             const snap = await getDocs(collection(db, "domains"));
-            setDomains(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            setDomains(snap.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as Domain)));
         };
 
         const fetchStats = async () => {

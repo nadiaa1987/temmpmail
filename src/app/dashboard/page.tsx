@@ -29,12 +29,30 @@ import {
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { formatDistanceToNow } from "date-fns";
 
+interface TempAddress {
+    id: string;
+    address: string;
+    userId: string;
+    createdAt?: any;
+}
+
+interface Email {
+    id: string;
+    from: string;
+    subject: string;
+    text: string;
+    html: string;
+    recipientEmail: string;
+    userId: string;
+    createdAt?: any;
+}
+
 export default function Dashboard() {
     const [user, loading] = useAuthState(auth);
-    const [addresses, setAddresses] = useState<any[]>([]);
+    const [addresses, setAddresses] = useState<TempAddress[]>([]);
     const [activeAddress, setActiveAddress] = useState<string>("");
-    const [emails, setEmails] = useState<any[]>([]);
-    const [selectedEmail, setSelectedEmail] = useState<any>(null);
+    const [emails, setEmails] = useState<Email[]>([]);
+    const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Fetch user's temp addresses
@@ -43,7 +61,10 @@ export default function Dashboard() {
 
         const q = query(collection(db, "temp_addresses"), where("userId", "==", user.uid));
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            const addrList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const addrList = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as TempAddress));
             setAddresses(addrList);
             if (addrList.length > 0 && !activeAddress) {
                 setActiveAddress(addrList[0].address);
@@ -64,7 +85,10 @@ export default function Dashboard() {
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            setEmails(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            setEmails(snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as Email)));
         });
 
         return () => unsubscribe();
@@ -157,8 +181,8 @@ export default function Dashboard() {
                                         key={addr.id}
                                         onClick={() => setActiveAddress(addr.address)}
                                         className={`w-full text-left p-3 rounded-xl border transition-all ${activeAddress === addr.address
-                                                ? "border-violet-500 bg-violet-500/5 ring-1 ring-violet-500"
-                                                : "border-transparent hover:bg-muted"
+                                            ? "border-violet-500 bg-violet-500/5 ring-1 ring-violet-500"
+                                            : "border-transparent hover:bg-muted"
                                             }`}
                                     >
                                         <div className="text-sm font-medium truncate">{addr.address}</div>
